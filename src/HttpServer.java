@@ -3,11 +3,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HttpServer {
+    private static final Logger logger = Logger.getLogger(HttpServer.class.getName());
     private ServerSocket serverSocket;
     private boolean running = false;
     private final int port;
+    public final ThreadPoolExecutor threadPool;
 
     private final Map<String, Handler> routeHandlers;
 
@@ -16,6 +22,7 @@ public class HttpServer {
     public HttpServer(int port) {
         this.port = port;
         this.routeHandlers = new HashMap<>();
+        this.threadPool = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     }
 
     public void start(Runnable onStart) throws IOException {
@@ -28,7 +35,9 @@ public class HttpServer {
         while (running) {
             Socket clientSocket = serverSocket.accept();
             if (onConnectionListener != null) onConnectionListener.run(clientSocket);
-            handleClient(clientSocket);
+
+            // submit to thread pool for processing instead of calling it directly
+            threadPool.submit(() -> handleClient(clientSocket));
         }
     }
 
@@ -37,6 +46,7 @@ public class HttpServer {
         if (serverSocket != null) {
             serverSocket.close();
         }
+        threadPool.shutdown();
     }
 
 
@@ -56,7 +66,7 @@ public class HttpServer {
 
             clientSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Error handling client", e);
         }
     }
 
