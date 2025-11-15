@@ -10,7 +10,7 @@ public class HttpResponse {
     private final Map<String, String> headers;
     private String body;
     private Boolean sent;
-    private OutputStream out;
+    private final OutputStream out;
 
     public HttpResponse(OutputStream outputStream) {
         this.sent = false;

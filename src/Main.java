@@ -4,9 +4,7 @@ public class Main {
         int port = 8080;
         HttpServer server = new HttpServer(port);
         try {
-            server.addConnectionListener((client) -> {
-                System.out.println("New connection has been detected: " + client);
-            });
+            server.addConnectionListener((client) -> System.out.println("New connection has been detected: " + client));
 
             server.registerHandler("/hello", (req, res) -> {
                 if (req.getMethod() == Method.GET) {
@@ -17,9 +15,7 @@ public class Main {
                     res.status(404, "Not Found").send();
                 }
             });
-            server.start(() -> {
-                System.out.println("Server running on port " + port);
-            });
+            server.start(() -> System.out.println("Server running on port " + port));
         } catch (IOException e) {
             e.printStackTrace();
         }
